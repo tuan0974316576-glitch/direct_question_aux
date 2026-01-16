@@ -604,6 +604,10 @@
 
         <div id="feedback-area"></div>
         <button id="next-btn" class="btn-style" onclick="nextQuestion()">Next Question ➡</button>
+        <button id="quit-btn" class="btn-style" onclick="returnToMenu()" 
+                style="background-color: #fff; border: 2px solid #e9ecef; color: #aaa; font-size: 15px; margin-top: 20px; padding: 10px 20px;">
+            ⬅ 放棄返回 (Quit)
+        </button>
     </div>
 
     <div id="end-screen">
@@ -1216,7 +1220,22 @@
             endGame();
         }
     }
-
+// --- 遊戲中途返回功能 ---
+    function returnToMenu() {
+        if(confirm("確定要放棄並返回主選單嗎？\n(目前的進度將會遺失)")) {
+            // 1. 停止遊戲相關運作
+            clearInterval(timerInterval);
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            
+            // 2. 切換介面
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+            
+            // 3. 重置狀態 (可選，視乎 startGame 有無做，但保險起見清空)
+            isAnswering = false;
+        }
+    }
 function endGame() {
         document.getElementById('game-area').style.display = 'none';
         document.getElementById('end-screen').style.display = 'flex';
@@ -1455,4 +1474,5 @@ const inputs = document.querySelectorAll('.option-btn input');
 </body>
 
 </html>
+
 
