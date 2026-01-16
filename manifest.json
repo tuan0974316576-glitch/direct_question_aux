@@ -1,0 +1,17 @@
+{
+  "name": "真問句提問字特訓",
+  "short_name": "提問字特訓",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F1F3F3",
+  "theme_color": "#0a9396",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+       "purpose": "any maskable"
+    }
+  ]
+}
