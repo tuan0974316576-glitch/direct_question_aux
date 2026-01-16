@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>真問句提問字特訓</title>
+<link rel="manifest" href="manifest.json">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Nunito:wght@400;700;900&display=swap');
+
+* { 
+        -webkit-tap-highlight-color: transparent; 
+        box-sizing: border-box; 
+    }
+        /* --- 🎨 核心配色 (日系文具風) --- */
+        :root {
+            --base-bg: #fdfbf7;       
+            --primary-color: #4ecdc4;  
+            --primary-dark: #2cb5ac;   
+            --secondary-color: #ffe66d; 
+            --secondary-dark: #ffb703;
+            --danger-color: #ff6b6b;   
+            --warning-color: #ffbe0b;
+            --correct-color: #6bf178;  
+            --text-color: #444444;     
+            --border-color: #d1d8e0;   
+        }
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        html, body {
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-y: auto; /* 允許捲動 */
+        }
+
+        body {
+            font-family: "Nunito", "M PLUS Rounded 1c", sans-serif;
+            background-color: var(--base-bg);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            padding: 20px 10px;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 800px; 
+            background-color: #ffffff;
+            border: 3px dashed var(--primary-color);
+            border-radius: 30px;
+            box-shadow: 0 0 0 6px #ffffff, 0 10px 20px rgba(78, 205, 196, 0.15);
+            padding: 24px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: 85vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-dark);
+            margin: 0 0 20px 0;
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        /* --- 通用按鈕 --- */
+        .btn-style {
+            border-radius: 50px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
+        }
+        .btn-style:active { transform: translateY(2px); box-shadow: none !important; }
+
+        /* --- 1. 開始畫面 --- */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .setting-box {
+            background: #fff;
+            border: 2px dashed #d1d8e0;
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* Slider 樣式 */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            margin: 15px 0;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            margin-top: -8px;
+            cursor: pointer;
+        }
+
+        .big-start-btn {
+            background-color: var(--secondary-color);
+            color: #5d4037;
+            font-size: 22px;
+            padding: 15px 80px;
+            box-shadow: 0 6px 0 var(--secondary-dark), 0 10px 10px rgba(255, 193, 7, 0.3);
+        }
+        .big-start-btn:hover { transform: translateY(-2px); background-color: #ffeb85; }
+
+        /* --- 2. 遊戲區域 --- */
+        #game-area { display: none; flex-direction: column; width: 100%; }
+
+        /* 進度條與計時器 */
+        #top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            font-size: 16px;
+        }
+
+        /* 計時器樣式 */
+        .timer-wrapper {
+            flex: 1;
+            margin: 0 15px;
+            position: relative;
+            height: 24px;
+            background: #f1f3f5;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #timer-bar {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 100%;
+            background-color: var(--primary-color);
+            transition: width 0.1s linear, background-color 0.3s;
+            z-index: 1;
+        }
+        #timer-text {
+            position: relative;
+            z-index: 2;
+            font-size: 14px;
+            color: #555;
+            font-weight: 900;
+            text-shadow: 0 0 2px rgba(255,255,255,0.8);
+        }
+
+        /* 題目顯示區 (中文) */
+        #question-box {
+            background-color: #ffffff;
+            border: 4px dashed var(--primary-color);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 0 rgba(78, 205, 196, 0.2);
+        }
+
+        #ch-sentence {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--text-color);
+            line-height: 1.4;
+        }
+
+        /* 23 按鈕排版 */
+        #keyboard-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .group-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 12px;
+            border: 2px solid #eee;
+            position: relative;
+        }
+
+        /* 左上角的分類標籤 */
+        .group-label {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: var(--secondary-color);
+            color: #5d4037;
+            font-size: 12px;
+            font-weight: 900;
+            padding: 2px 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 預設 3 欄 */
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        /* 針對不同數量的按鈕微調 Grid */
+        .grid-5 { grid-template-columns: repeat(5, 1fr); } /* Modals 5個 */
+        .grid-6 { grid-template-columns: repeat(3, 1fr); } /* Perfect 6個 (3x2) */
+        .grid-3 { grid-template-columns: repeat(3, 1fr); } /* Do 3個 */
+        .grid-9 { grid-template-columns: repeat(3, 1fr); } /* Be 9個 (3x3) */
+
+        /* RWD: 手機版 Modal 變 3+2 */
+        @media (max-width: 500px) {
+            .grid-5 { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .grammar-btn {
+            background-color: white;
+            border: 2px dashed #ced4da;
+            color: #666;
+            font-size: 14px; /* 字體稍小以容納長字 */
+            padding: 5px;
+            box-shadow: 0 3px 0 #dee2e6;
+            min-height: 48px;
+            white-space: normal;
+            line-height: 1.1;
+        }
+
+        .grammar-btn:hover:not(:disabled) { 
+            background-color: #e3f2fd; 
+            border-color: var(--primary-color); 
+            color: var(--primary-dark); 
+            transform: translateY(-2px); 
+        }
+        
+        /* 正確/錯誤樣式 */
+        .grammar-btn.correct {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            border-style: solid !important;
+            border-color: var(--primary-dark) !important;
+            box-shadow: 0 3px 0 var(--primary-dark) !important;
+            opacity: 1 !important;
+        }
+        .grammar-btn.wrong {
+            background-color: #ffe3e3 !important;
+            color: var(--danger-color) !important;
+            border-color: var(--danger-color) !important;
+            opacity: 0.5;
+        }
+
+        /* --- Feedback --- */
+        #feedback-area { margin-top: auto; min-height: 80px; margin-bottom: 20px; }
+        
+        .feedback-card {
+            background-color: #fff;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .feedback-correct { border-color: var(--correct-color); background: #e8f5e9; }
+        .feedback-wrong { border-color: var(--danger-color); background: #ffebee; }
+
+        .en-sentence-reveal {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3436;
+            margin: 8px 0;
+        }
+        .highlight { color: var(--primary-dark); text-decoration: underline; font-weight: 900; }
+
+        #next-btn {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 18px;
+            padding: 12px;
+            box-shadow: 0 5px 0 var(--primary-dark);
+            display: none;
+        }
+        #next-btn:hover { background-color: var(--primary-dark); }
+
+        /* --- 3. 結算畫面 --- */
+        #end-screen { display: none; flex-direction: column; align-items: center; width: 100%; }
+        
+        .final-score {
+            font-size: 32px;
+            font-weight: 900;
+            color: #5d4037;
+            background-color: var(--secondary-color);
+            border: 4px solid #fff;
+            border-radius: 25px;
+            padding: 15px 40px;
+            box-shadow: 0 6px 15px rgba(255, 193, 7, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .error-list { width: 100%; text-align: left; margin-bottom: 20px; flex: 1; overflow-y: auto; max-height: 50vh;}
+        .error-item {
+            background: white;
+            border: 2px dashed #ffc9c9;
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+        }
+
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            #game-container { padding: 15px; border-radius: 0; border: none; min-height: 100vh; }
+            .grammar-btn { font-size: 13px; min-height: 42px; padding: 2px; }
+        }
+/* --- 溫習筆記 Modal 樣式 --- */
+.note-btn {
+    background-color: #fff;
+    border: 2px dashed var(--primary-color);
+    color: var(--primary-dark);
+    font-size: 16px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(78, 205, 196, 0.2);
+    margin-top: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+.note-btn:hover {
+    background-color: #e3f2fd;
+    transform: translateY(-2px);
+}
+
+/* 彈出視窗背景 */
+#note-modal {
+    display: none; /* 預設隱藏 */
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5); /* 半透明黑底 */
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* 筆記內容卡片 */
+.note-content {
+    background-color: #fff;
+    width: 100%;
+    max-width: 600px;
+    max-height: 85vh; /* 避免太長超出螢幕 */
+    overflow-y: auto; /* 允許內部捲動 */
+    border-radius: 20px;
+    border: 4px dashed var(--primary-color);
+    padding: 25px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    text-align: left;
+    font-family: "Nunito", "M PLUS Rounded 1c", sans-serif;
+}
+
+/* 筆記內文排版 */
+.note-section { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #eee; }
+.note-title { font-size: 18px; font-weight: 900; color: var(--primary-dark); margin-bottom: 10px; display:flex; align-items:center; }
+.note-tag { background: var(--secondary-color); color: #5d4037; padding: 2px 8px; border-radius: 6px; font-size: 12px; margin-right: 8px; }
+.note-text { font-size: 15px; line-height: 1.6; color: #555; }
+.note-example { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 5px; font-size: 14px; border-left: 4px solid var(--primary-color); }
+.wrong-ex { color: var(--danger-color); text-decoration: line-through; margin-right: 10px; }
+.formula-box { background: #e3f2fd; padding: 15px; border-radius: 10px; text-align: center; font-weight: 900; color: var(--primary-dark); font-size: 18px; margin-bottom: 15px; border: 2px solid #b3e5fc; }
+
+/* 關閉按鈕 */
+.close-note {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+/* --- 🎤 跟讀功能樣式 --- */
+@keyframes pulse-white {
+    0% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.6); transform: scale(1); }
+    50% { transform: scale(1.05); }
+    70% { box-shadow: 0 0 0 15px rgba(78, 205, 196, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0); transform: scale(1); }
+}
+
+.mic-btn {
+    background-color: #ffffff;
+    border: 3px dashed var(--primary-color);
+    border-radius: 50px;
+    padding: 10px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--primary-color);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.05);
+    outline: none;
+    min-width: 200px;
+    margin-top: 10px;
+}
+
+.mic-btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+    background-color: #f1f3f5;
+    border-color: #ccc;
+    color: #999;
+    box-shadow: none;
+    transform: none !important;
+}
+
+.mic-btn:hover:not(:disabled) {
+    background-color: #e3f2fd;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+}
+
+.mic-btn.listening {
+    background-color: var(--danger-color) !important;
+    border: 3px solid white !important;
+    color: white !important;
+    animation: pulse-white 1.5s infinite;
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+}
+
+.mic-result { margin-top: 10px; min-height: 25px; }
+
+.diff-word {
+    font-weight: bold;
+    font-size: 18px;
+    margin: 0 3px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    display: inline-block;
+}
+.diff-correct { color: #2d6a4f; background-color: #d8f3dc; }
+.diff-wrong { color: #c92a2a; background-color: #ffe3e3; text-decoration: line-through; }
+.diff-missed { color: #adb5bd; border: 1px dashed #dee2e6; }    
+/* --- 分類按鈕樣式 --- */
+        .section-title {
+            font-size: 16px; color: #888; margin: 15px 0 8px 0; font-weight: 800;
+            width: 100%; text-align: left; border-bottom: 2px dashed #eee; padding-bottom: 5px;
+        }
+        .category-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; margin-bottom: 10px;
+        }
+        .option-btn {
+            background-color: #ffffff; border: 2px dashed #d1d8e0; border-radius: 50px;
+            padding: 12px 10px; cursor: pointer; text-align: center; font-weight: 800;
+            color: #888; transition: all 0.2s; box-shadow: 0 4px 0 #f0f0f0; font-size: 14px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .option-btn:hover { background-color: #e0fbfc; border-color: var(--primary-color); color: var(--primary-dark); transform: translateY(-2px); }
+        .option-btn.selected {
+            background-color: var(--primary-color) !important; color: white !important;
+            border: 2px solid var(--primary-color) !important; box-shadow: 0 4px 0 var(--primary-dark) !important;
+            transform: translateY(-2px);
+        }
+        .option-btn input { display: none; }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1>📝 真問句提問字特訓</h1>
+
+    <div id="start-screen">
+<div class="section-title">選擇特訓類別 (預設全選)</div>
+        <div class="category-grid">
+            <label class="option-btn selected"><input type="checkbox" name="cat" value="Modals" checked>Modals</label>
+            <label class="option-btn selected"><input type="checkbox" name="cat" value="Perfect" checked>Perfect</label>
+            <label class="option-btn selected"><input type="checkbox" name="cat" value="DoDid" checked>Do/Did</label>
+            <label class="option-btn selected"><input type="checkbox" name="cat" value="Be" checked>Be Verbs</label>
+        </div>
+        <div class="setting-box">
+            <div style="font-size:18px; font-weight:bold; color:#555; margin-bottom:10px;">設定題目數量</div>
+            <div style="font-size:32px; font-weight:900; color:var(--primary-dark);" id="q-count-display">10</div>
+            <input type="range" id="q-slider" min="5" max="50" step="5" value="10" oninput="updateSlider(this.value)">
+        </div>
+ <button class="btn-style big-start-btn" id="start-btn" onclick="startGame(false)">開始挑戰</button>
+<button class="note-btn" onclick="openNote()">
+    📖 溫習筆記 (Cheat Sheet)
+</button>
+    </div>
+
+    <div id="game-area">
+        <div id="top-bar">
+            <span id="q-num-display">1/10</span>
+            <div class="timer-wrapper">
+                <div id="timer-bar"></div>
+                <div id="timer-text">15.0</div>
+            </div>
+            <span id="score-display">Score: 0</span>
+        </div>
+
+        <div id="question-box">
+            <div id="ch-sentence">題目載入中...</div>
+        </div>
+
+        <div id="keyboard-area">
+            
+            <div class="group-section">
+                <span class="group-label">1. Modal Verbs</span>
+                <div class="btn-grid grid-5">
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('can', this)">can</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('will', this)">will</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('should', this)">should</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('may', this)">may</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('must', this)">must</button>
+                </div>
+            </div>
+
+            <div class="group-section">
+                <span class="group-label">2. Perfect (Has/Have)</span>
+                <div class="btn-grid grid-6">
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('have pp', this)">have pp</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('has pp', this)">has pp</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('have been ving', this)">have been ving</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('has been ving', this)">has been ving</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('have been pp', this)">have been pp</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('has been pp', this)">has been pp</button>
+                </div>
+            </div>
+
+            <div class="group-section">
+                <span class="group-label">3. Do/Does/Did</span>
+                <div class="btn-grid grid-3">
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('do', this)">do</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('does', this)">does</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('did', this)">did</button>
+                </div>
+            </div>
+
+            <div class="group-section">
+                <span class="group-label">4. Is/Are/Are/Was/Were (Is/Am/Are...)</span>
+                <div class="btn-grid grid-9">
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('is ving', this)">is ving</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('am ving', this)">am ving</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('are ving', this)">are ving</button>
+                    
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('is pp', this)">is pp</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('am pp', this)">am pp</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('are pp', this)">are pp</button>
+
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('is adj/n', this)">is (adj/n)</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('am adj/n', this)">am (adj/n)</button>
+                    <button class="btn-style grammar-btn" onclick="checkAnswer('are adj/n', this)">are (adj/n)</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="feedback-area"></div>
+        <button id="next-btn" class="btn-style" onclick="nextQuestion()">Next Question ➡</button>
+    </div>
+
+    <div id="end-screen">
+        <div class="final-score">Score: 0</div>
+        <div class="error-list" id="error-container"></div>
+<div id="end-controls-area" style="width:100%; margin-top:10px;"></div>
+    </div>
+</div>
+<div id="note-modal">
+    <div class="note-content">
+        <button class="close-note" onclick="closeNote()">×</button>
+        <h2 style="text-align:center; color:#5d4037; margin-top:0;">📚 23式提問字攻略</h2>
+        
+        <div class="formula-box">
+            (Wh-word) + 提問字 + 主語 …… ?
+        </div>
+
+        <div class="note-section" style="background:#fff5f5; border:2px solid #ffc9c9; padding:10px; border-radius:10px;">
+            <div class="note-title" style="color:#e03131;">🚫 常犯中式英文錯誤</div>
+            <div class="note-text">
+                檢查 Wh-word 是否直接跟主語？如果是，<b>99%錯！</b><br>
+                <span class="wrong-ex">Why you so stupid?</span> ❌<br>
+                <span class="wrong-ex">What he likes to play?</span> ❌
+            </div>
+        </div>
+
+<div class="note-section">
+            <div class="note-title"><span class="note-tag">1</span> Modal Verbs (情態動詞)</div>
+            <div class="note-text">
+                如果句子有以下字眼，直接用它做提問字。<br>
+                ⚠️ <b>注意：</b>後面的動詞必須是<b>原型 (Base Form)</b>。<br>
+                (如果後面接名詞/形容詞，要加 <b>be</b>)
+            </div>
+            <div class="note-example" style="line-height: 1.8;">
+                <b>1. Can (可以/能夠)</b><br>
+                他可以贏出這比賽嗎? → <b>Can</b> he <b>win</b> the game?<br>
+                <br>
+                <b>2. Will (將會)</b><br>
+                我們會去哪裏? → Where <b>will</b> we <b>go</b>?<br>
+                <br>
+                <b>3. Should (應該)</b><br>
+                我們現在應該離開嗎? → <b>Should</b> we <b>leave</b> now?<br>
+                <br>
+                <b>4. May (可以/可能 - 禮貌)</b><br>
+                我可以去洗手間嗎? → <b>May</b> I <b>go</b> to the toilet?<br>
+                <br>
+                <b>5. Must (必須/一定)</b><br>
+                她今天必須來嗎? → <b>Must</b> she <b>come</b> today?
+            </div>
+        </div>
+
+        <div class="note-section">
+            <div class="note-title"><span class="note-tag">2</span> Has / Have (完成式)</div>
+            <div class="note-text">
+                <b>Has</b> (He/She/It) / <b>Have</b> (I/You/We/They)<br>
+                <ul>
+                    <li>有「已經/了」(無過去時間)：動詞轉 <b>pp</b></li>
+                    <li>有「一直/了」(持續中)：動詞轉 <b>been ving</b></li>
+                    <li>有「已經被/一直被」：動詞轉 <b>been pp</b></li>
+                </ul>
+            </div>
+            <div class="note-example">
+                他已經離開了? → <b>Has</b> he <b>left</b>?<br>
+                她今日一直在做甚麼? → What <b>has</b> she <b>been doing</b> today?
+                你的狗已經被找回了嗎? → <b>Has</b> your dog <b>been found</b>?
+            </div>
+        </div>
+
+        <div class="note-section">
+            <div class="note-title"><span class="note-tag">3</span> Do / Does / Did</div>
+            <div class="note-text">
+                當句子<b>沒有</b> Modals 及 Has/Have，又有<b>主動動詞</b>時使用。<br>
+                ⚠️ <b>注意：</b>後方動詞必須<b>原型</b>。
+                <ul>
+                    <li>有「過去時間詞」：用 <b>Did</b></li>
+                    <li>無特別時間：用 <b>Do / Does</b></li>
+                </ul>
+            </div>
+            <div class="note-example">
+                你討厭蜘蛛嗎? → <b>Do</b> you hate spiders?<br>
+                他喜歡中國嗎? → <b>Does</b> he like China?<br>
+                你昨天食了甚麼? → What <b>did</b> you eat yesterday?
+            </div>
+        </div>
+<div class="note-section" style="border-bottom:none;">
+            <div class="note-title"><span class="note-tag">4</span> Be Verbs (Is/Am/Are...)</div>
+            <div class="note-text">
+                當句子<b>沒有</b>上述 1, 2, 3 類情況時使用。<br>
+                (過去時間用 Was/Were，否則用 Is/Am/Are)
+                <ul>
+                    <li>有「被/由」：動詞轉 <b>pp</b></li>
+                    <li>有「正在」：動詞轉 <b>ing</b></li>
+                    <li>只有「形容詞/名詞」：直接用 Be 動詞</li>
+                </ul>
+            </div>
+            <div class="note-example">
+                為甚麼他昨天被懲罰? → Why <b>was</b> he <b>punished</b> yesterday?<br>
+                你的家在哪裡? → Where <b>is</b> your home?<br>
+                他們正在做甚麼? → What <b>are</b> they <b>doing</b>?<br>
+                中國100年前富裕嗎? → <b>Was</b> China rich 100 years ago?
+            </div>
+        </div>
+
+        <button class="btn-style" style="width:100%; background:var(--primary-color); color:white; padding:12px;" onclick="closeNote()">明白，關閉筆記</button>
+    </div>
+</div>
+<script>
+    // --- 題目資料庫 (擴充至包含所有類型) ---
+    // cat: 'Modals', 'Perfect', 'DoDid', 'Be'
+    const questionBank = [
+        // Modals (5)
+        { cat: "Modals", ch: "我可以幫你嗎?", ans: "can", en: "<span class='highlight'>Can</span> I help you?", text: "Can I help you?" },
+        { cat: "Modals", ch: "他會來嗎?", ans: "will", en: "<span class='highlight'>Will</span> he come?", text: "Will he come?" },
+        { cat: "Modals", ch: "我應該告訴他嗎?", ans: "should", en: "<span class='highlight'>Should</span> I tell him?", text: "Should I tell him?" },
+        { cat: "Modals", ch: "我可以進來嗎? (禮貌)", ans: "may", en: "<span class='highlight'>May</span> I come in?", text: "May I come in?" },
+        { cat: "Modals", ch: "這必須今天完成嗎?", ans: "must", en: "<span class='highlight'>Must</span> this be finished today?", text: "Must this be finished today?" },
+
+        // Perfect (6)
+        { cat: "Perfect", ch: "你吃過午餐了嗎?", ans: "have pp", en: "<span class='highlight'>Have</span> you <span class='highlight'>eaten</span> lunch?", text: "Have you eaten lunch?" },
+        { cat: "Perfect", ch: "他已經走了嗎?", ans: "has pp", en: "<span class='highlight'>Has</span> he <span class='highlight'>left</span>?", text: "Has he left?" },
+        { cat: "Perfect", ch: "你一直都在這裡等嗎?", ans: "have been ving", en: "<span class='highlight'>Have</span> you <span class='highlight'>been waiting</span> here?", text: "Have you been waiting here?" },
+        { cat: "Perfect", ch: "他最近一直工作很辛苦嗎?", ans: "has been ving", en: "<span class='highlight'>Has</span> he <span class='highlight'>been working</span> hard?", text: "Has he been working hard?" },
+        { cat: "Perfect", ch: "這些房子已經被賣掉了嗎?", ans: "have been pp", en: "<span class='highlight'>Have</span> these houses <span class='highlight'>been sold</span>?", text: "Have these houses been sold?" },
+        { cat: "Perfect", ch: "這封信已經被寄出了嗎?", ans: "has been pp", en: "<span class='highlight'>Has</span> the letter <span class='highlight'>been sent</span>?", text: "Has the letter been sent?" },
+
+        // Do/Did (3)
+        { cat: "DoDid", ch: "你喜歡貓嗎?", ans: "do", en: "<span class='highlight'>Do</span> you like cats?", text: "Do you like cats?" },
+        { cat: "DoDid", ch: "他住在這兒嗎?", ans: "does", en: "<span class='highlight'>Does</span> he live here?", text: "Does he live here?" },
+        { cat: "DoDid", ch: "你昨天買了甚麼?", ans: "did", en: "What <span class='highlight'>did</span> you buy yesterday?", text: "What did you buy yesterday?" },
+
+        // Be (9)
+        { cat: "Be", ch: "你正在聽音樂嗎?", ans: "are ving", en: "<span class='highlight'>Are</span> you <span class='highlight'>listening</span> to music?", text: "Are you listening to music?" },
+        { cat: "Be", ch: "他正在睡覺嗎?", ans: "is ving", en: "<span class='highlight'>Is</span> he <span class='highlight'>sleeping</span>?", text: "Is he sleeping?" },
+        { cat: "Be", ch: "我正在發夢嗎?", ans: "am ving", en: "<span class='highlight'>Am</span> I <span class='highlight'>dreaming</span>?", text: "Am I dreaming?" },
+        { cat: "Be", ch: "你是被邀請的嗎?", ans: "are pp", en: "<span class='highlight'>Are</span> you <span class='highlight'>invited</span>?", text: "Are you invited?" },
+        { cat: "Be", ch: "這本書是用英文寫的嗎?", ans: "is pp", en: "<span class='highlight'>Is</span> this book <span class='highlight'>written</span> in English?", text: "Is this book written in English?" },
+        { cat: "Be", ch: "我是被需要的嗎?", ans: "am pp", en: "<span class='highlight'>Am</span> I <span class='highlight'>needed</span> here?", text: "Am I needed here?" },
+        { cat: "Be", ch: "你是學生嗎?", ans: "are adj/n", en: "<span class='highlight'>Are</span> you a <span class='highlight'>student</span>?", text: "Are you a student?" },
+        { cat: "Be", ch: "他很高嗎?", ans: "is adj/n", en: "<span class='highlight'>Is</span> he <span class='highlight'>tall</span>?", text: "Is he tall?" },
+        { cat: "Be", ch: "我是對的嗎?", ans: "am adj/n", en: "<span class='highlight'>Am</span> I <span class='highlight'>right</span>?", text: "Am I right?" },
+// --- 新增 115 題 (23分類 x 5題) ---
+    
+    // ==========================================
+    // 1. Modals (情態動詞)
+    // ==========================================
+    
+    // 1.1 CAN
+    { cat: "Modals", ch: "我們可以在哪裡買票?", ans: "can", en: "Where <span class='highlight'>can</span> we buy tickets?", text: "Where can we buy tickets?" },
+    { cat: "Modals", ch: "你可以為我做甚麼?", ans: "can", en: "What <span class='highlight'>can</span> you do for me?", text: "What can you do for me?" },
+    { cat: "Modals", ch: "我們何時可以開始?", ans: "can", en: "When <span class='highlight'>can</span> we start?", text: "When can we start?" },
+    { cat: "Modals", ch: "我要如何打開這個?", ans: "can", en: "How <span class='highlight'>can</span> I open this?", text: "How can I open this?" },
+    { cat: "Modals", ch: "你能聽到我嗎?", ans: "can", en: "<span class='highlight'>Can</span> you hear me?", text: "Can you hear me?" },
+
+    // 1.2 WILL
+    { cat: "Modals", ch: "你甚麼時候會回來?", ans: "will", en: "When <span class='highlight'>will</span> you return?", text: "When will you return?" },
+    { cat: "Modals", ch: "他在哪裡等你?", ans: "will", en: "Where <span class='highlight'>will</span> he wait for you?", text: "Where will he wait for you?" },
+    { cat: "Modals", ch: "誰會贏得比賽?", ans: "will", en: "Who <span class='highlight'>will</span> win the match?", text: "Who will win the match?" },
+    { cat: "Modals", ch: "你將會做甚麼?", ans: "will", en: "What <span class='highlight'>will</span> you do?", text: "What will you do?" },
+    { cat: "Modals", ch: "你會嫁給我嗎?", ans: "will", en: "<span class='highlight'>Will</span> you marry me?", text: "Will you marry me?" },
+
+    // 1.3 SHOULD
+    { cat: "Modals", ch: "我應該把這放在哪裡?", ans: "should", en: "Where <span class='highlight'>should</span> I put this?", text: "Where should I put this?" },
+    { cat: "Modals", ch: "我們為什麼要相信你?", ans: "should", en: "Why <span class='highlight'>should</span> we trust you?", text: "Why should we trust you?" },
+    { cat: "Modals", ch: "我也應該去嗎?", ans: "should", en: "<span class='highlight'>Should</span> I go too?", text: "Should I go too?" },
+    { cat: "Modals", ch: "他甚麼時候到達?", ans: "should", en: "When <span class='highlight'>should</span> he arrive?", text: "When should he arrive?" },
+    { cat: "Modals", ch: "我應該穿甚麼?", ans: "should", en: "What <span class='highlight'>should</span> I wear?", text: "What should I wear?" },
+
+    // 1.4 MAY (較少用於 Wh-問句，多表禮貌/可能)
+    { cat: "Modals", ch: "我可以在哪裡吸煙?", ans: "may", en: "Where <span class='highlight'>may</span> I smoke?", text: "Where may I smoke?" }, // 比較正式
+    { cat: "Modals", ch: "誰可能知道答案?", ans: "may", en: "Who <span class='highlight'>may</span> know the answer?", text: "Who may know the answer?" },
+    { cat: "Modals", ch: "為什麼這可能是真的?", ans: "may", en: "Why <span class='highlight'>may</span> this be true?", text: "Why may this be true?" },
+    { cat: "Modals", ch: "這可能導致甚麼?", ans: "may", en: "What <span class='highlight'>may</span> this lead to?", text: "What may this lead to?" },
+    { cat: "Modals", ch: "我可以借用你的筆嗎?", ans: "may", en: "<span class='highlight'>May</span> I borrow your pen?", text: "May I borrow your pen?" },
+
+    // 1.5 MUST
+    { cat: "Modals", ch: "我們必須在哪裡簽名?", ans: "must", en: "Where <span class='highlight'>must</span> we sign?", text: "Where must we sign?" },
+    { cat: "Modals", ch: "為什麼你必須離開?", ans: "must", en: "Why <span class='highlight'>must</span> you leave?", text: "Why must you leave?" },
+    { cat: "Modals", ch: "我甚麼時候必須完成?", ans: "must", en: "When <span class='highlight'>must</span> I finish?", text: "When must I finish?" },
+    { cat: "Modals", ch: "誰必須負責?", ans: "must", en: "Who <span class='highlight'>must</span> be responsible?", text: "Who must be responsible?" },
+    { cat: "Modals", ch: "這一定是真的嗎? (推測)", ans: "must", en: "<span class='highlight'>Must</span> this be true?", text: "Must this be true?" },
+
+    // ==========================================
+    // 2. Perfect (完成式 Have/Has)
+    // ==========================================
+
+    // 2.1 HAVE PP
+    { cat: "Perfect", ch: "你去了哪裡?", ans: "have pp", en: "Where <span class='highlight'>have</span> you <span class='highlight'>been</span>?", text: "Where have you been?" },
+    { cat: "Perfect", ch: "他們做了甚麼?", ans: "have pp", en: "What <span class='highlight'>have</span> they <span class='highlight'>done</span>?", text: "What have they done?" },
+    { cat: "Perfect", ch: "你為何改變了主意?", ans: "have pp", en: "Why <span class='highlight'>have</span> you <span class='highlight'>changed</span> your mind?", text: "Why have you changed your mind?" },
+    { cat: "Perfect", ch: "你等了多久?", ans: "have pp", en: "How long <span class='highlight'>have</span> you <span class='highlight'>waited</span>?", text: "How long have you waited?" },
+    { cat: "Perfect", ch: "你看過這部電影嗎?", ans: "have pp", en: "<span class='highlight'>Have</span> you <span class='highlight'>seen</span> this movie?", text: "Have you seen this movie?" },
+
+    // 2.2 HAS PP
+    { cat: "Perfect", ch: "他發生了甚麼事?", ans: "has pp", en: "What <span class='highlight'>has</span> <span class='highlight'>happened</span> to him?", text: "What has happened to him?" },
+    { cat: "Perfect", ch: "她去了哪裡?", ans: "has pp", en: "Where <span class='highlight'>has</span> she <span class='highlight'>gone</span>?", text: "Where has she gone?" },
+    { cat: "Perfect", ch: "誰拿走了我的筆?", ans: "has pp", en: "Who <span class='highlight'>has</span> <span class='highlight'>taken</span> my pen?", text: "Who has taken my pen?" },
+    { cat: "Perfect", ch: "為什麼雨停了?", ans: "has pp", en: "Why <span class='highlight'>has</span> the rain <span class='highlight'>stopped</span>?", text: "Why has the rain stopped?" },
+    { cat: "Perfect", ch: "他到達了嗎?", ans: "has pp", en: "<span class='highlight'>Has</span> he <span class='highlight'>arrived</span>?", text: "Has he arrived?" },
+
+    // 2.3 HAVE BEEN VING
+    { cat: "Perfect", ch: "你最近一直在做甚麼?", ans: "have been ving", en: "What <span class='highlight'>have</span> you <span class='highlight'>been doing</span> lately?", text: "What have you been doing lately?" },
+    { cat: "Perfect", ch: "他們一直在哪裡玩?", ans: "have been ving", en: "Where <span class='highlight'>have</span> they <span class='highlight'>been playing</span>?", text: "Where have they been playing?" },
+    { cat: "Perfect", ch: "為什麼你們一直在笑?", ans: "have been ving", en: "Why <span class='highlight'>have</span> you <span class='highlight'>been laughing</span>?", text: "Why have you been laughing?" },
+    { cat: "Perfect", ch: "你學了多久英文?", ans: "have been ving", en: "How long <span class='highlight'>have</span> you <span class='highlight'>been learning</span> English?", text: "How long have you been learning English?" },
+    { cat: "Perfect", ch: "你最近一直感覺不舒服嗎?", ans: "have been ving", en: "<span class='highlight'>Have</span> you <span class='highlight'>been feeling</span> sick?", text: "Have you been feeling sick?" },
+
+    // 2.4 HAS BEEN VING
+    { cat: "Perfect", ch: "她一直在和誰說話?", ans: "has been ving", en: "Who <span class='highlight'>has</span> she <span class='highlight'>been talking</span> to?", text: "Who has she been talking to?" },
+    { cat: "Perfect", ch: "他一直在哪裡工作?", ans: "has been ving", en: "Where <span class='highlight'>has</span> he <span class='highlight'>been working</span>?", text: "Where has he been working?" },
+    { cat: "Perfect", ch: "這狗一直在叫甚麼?", ans: "has been ving", en: "What <span class='highlight'>has</span> the dog <span class='highlight'>been barking</span> at?", text: "What has the dog been barking at?" },
+    { cat: "Perfect", ch: "為什麼一直在下雨?", ans: "has been ving", en: "Why <span class='highlight'>has</span> it <span class='highlight'>been raining</span>?", text: "Why has it been raining?" },
+    { cat: "Perfect", ch: "他最近一直睡得好嗎?", ans: "has been ving", en: "<span class='highlight'>Has</span> he <span class='highlight'>been sleeping</span> well?", text: "Has he been sleeping well?" },
+
+    // 2.5 HAVE BEEN PP
+    { cat: "Perfect", ch: "這些車是在哪裡製造的?", ans: "have been pp", en: "Where <span class='highlight'>have</span> these cars <span class='highlight'>been made</span>?", text: "Where have these cars been made?" },
+    { cat: "Perfect", ch: "甚麼規則被改變了?", ans: "have been pp", en: "What rules <span class='highlight'>have</span> <span class='highlight'>been changed</span>?", text: "What rules have been changed?" },
+    { cat: "Perfect", ch: "為什麼航班被取消了?", ans: "have been pp", en: "Why <span class='highlight'>have</span> the flights <span class='highlight'>been cancelled</span>?", text: "Why have the flights been cancelled?" },
+    { cat: "Perfect", ch: "這些房間何時被清潔過?", ans: "have been pp", en: "When <span class='highlight'>have</span> the rooms <span class='highlight'>been cleaned</span>?", text: "When have the rooms been cleaned?" },
+    { cat: "Perfect", ch: "他們被通知了嗎?", ans: "have been pp", en: "<span class='highlight'>Have</span> they <span class='highlight'>been informed</span>?", text: "Have they been informed?" },
+
+    // 2.6 HAS BEEN PP
+    { cat: "Perfect", ch: "我的錢包被偷去哪了?", ans: "has been pp", en: "Where <span class='highlight'>has</span> my wallet <span class='highlight'>been stolen</span>?", text: "Where has my wallet been stolen?" },
+    { cat: "Perfect", ch: "甚麼被發現了?", ans: "has been pp", en: "What <span class='highlight'>has</span> <span class='highlight'>been discovered</span>?", text: "What has been discovered?" },
+    { cat: "Perfect", ch: "為什麼會議被推遲了?", ans: "has been pp", en: "Why <span class='highlight'>has</span> the meeting <span class='highlight'>been delayed</span>?", text: "Why has the meeting been delayed?" },
+    { cat: "Perfect", ch: "這房子是何時建成的?", ans: "has been pp", en: "When <span class='highlight'>has</span> this house <span class='highlight'>been built</span>?", text: "When has this house been built?" },
+    { cat: "Perfect", ch: "它被修理好了嗎?", ans: "has been pp", en: "<span class='highlight'>Has</span> it <span class='highlight'>been fixed</span>?", text: "Has it been fixed?" },
+
+    // ==========================================
+    // 3. Do / Does / Did (Simple Tense)
+    // ==========================================
+
+    // 3.1 DO
+    { cat: "DoDid", ch: "你想要甚麼?", ans: "do", en: "What <span class='highlight'>do</span> you want?", text: "What do you want?" },
+    { cat: "DoDid", ch: "他們什麼時候離開?", ans: "do", en: "When <span class='highlight'>do</span> they leave?", text: "When do they leave?" },
+    { cat: "DoDid", ch: "你住在哪裡?", ans: "do", en: "Where <span class='highlight'>do</span> you live?", text: "Where do you live?" },
+    { cat: "DoDid", ch: "我們為什麼需要這個?", ans: "do", en: "Why <span class='highlight'>do</span> we need this?", text: "Why do we need this?" },
+    { cat: "DoDid", ch: "你明白嗎?", ans: "do", en: "<span class='highlight'>Do</span> you understand?", text: "Do you understand?" },
+
+    // 3.2 DOES
+    { cat: "DoDid", ch: "這意味著甚麼?", ans: "does", en: "What <span class='highlight'>does</span> this mean?", text: "What does this mean?" },
+    { cat: "DoDid", ch: "他甚麼時候開始?", ans: "does", en: "When <span class='highlight'>does</span> he start?", text: "When does he start?" },
+    { cat: "DoDid", ch: "她住在哪裡?", ans: "does", en: "Where <span class='highlight'>does</span> she live?", text: "Where does she live?" },
+    { cat: "DoDid", ch: "為什麼這很痛?", ans: "does", en: "Why <span class='highlight'>does</span> it hurt?", text: "Why does it hurt?" },
+    { cat: "DoDid", ch: "他認識你嗎?", ans: "does", en: "<span class='highlight'>Does</span> he know you?", text: "Does he know you?" },
+
+    // 3.3 DID
+    { cat: "DoDid", ch: "你昨天看見了甚麼?", ans: "did", en: "What <span class='highlight'>did</span> you see yesterday?", text: "What did you see yesterday?" },
+    { cat: "DoDid", ch: "他們甚麼時候到達的?", ans: "did", en: "When <span class='highlight'>did</span> they arrive?", text: "When did they arrive?" },
+    { cat: "DoDid", ch: "你把鑰匙放哪了?", ans: "did", en: "Where <span class='highlight'>did</span> you put the keys?", text: "Where did you put the keys?" },
+    { cat: "DoDid", ch: "你為什麼哭?", ans: "did", en: "Why <span class='highlight'>did</span> you cry?", text: "Why did you cry?" },
+    { cat: "DoDid", ch: "你喜歡這電影嗎?", ans: "did", en: "<span class='highlight'>Did</span> you like the movie?", text: "Did you like the movie?" },
+
+    // ==========================================
+    // 4. Be Verbs (Is/Am/Are...)
+    // ==========================================
+
+    // 4.1 IS VING (Present Continuous - Singular)
+    { cat: "Be", ch: "他在做甚麼?", ans: "is ving", en: "What <span class='highlight'>is</span> he <span class='highlight'>doing</span>?", text: "What is he doing?" },
+    { cat: "Be", ch: "她要去哪裡?", ans: "is ving", en: "Where <span class='highlight'>is</span> she <span class='highlight'>going</span>?", text: "Where is she going?" },
+    { cat: "Be", ch: "誰在睡覺?", ans: "is ving", en: "Who <span class='highlight'>is</span> <span class='highlight'>sleeping</span>?", text: "Who is sleeping?" },
+    { cat: "Be", ch: "為什麼他在跑?", ans: "is ving", en: "Why <span class='highlight'>is</span> he <span class='highlight'>running</span>?", text: "Why is he running?" },
+    { cat: "Be", ch: "正在下雨嗎?", ans: "is ving", en: "<span class='highlight'>Is</span> it <span class='highlight'>raining</span>?", text: "Is it raining?" },
+
+    // 4.2 AM VING (Present Continuous - I)
+    { cat: "Be", ch: "我正在做甚麼?", ans: "am ving", en: "What <span class='highlight'>am</span> I <span class='highlight'>doing</span>?", text: "What am I doing?" },
+    { cat: "Be", ch: "我為什麼在等待?", ans: "am ving", en: "Why <span class='highlight'>am</span> I <span class='highlight'>waiting</span>?", text: "Why am I waiting?" },
+    { cat: "Be", ch: "我要去哪裡?", ans: "am ving", en: "Where <span class='highlight'>am</span> I <span class='highlight'>going</span>?", text: "Where am I going?" },
+    { cat: "Be", ch: "我和誰說話?", ans: "am ving", en: "Who <span class='highlight'>am</span> I <span class='highlight'>talking</span> to?", text: "Who am I talking to?" },
+    { cat: "Be", ch: "我正在發夢嗎?", ans: "am ving", en: "<span class='highlight'>Am</span> I <span class='highlight'>dreaming</span>?", text: "Am I dreaming?" },
+
+    // 4.3 ARE VING (Present Continuous - Plural)
+    { cat: "Be", ch: "你們在看甚麼?", ans: "are ving", en: "What <span class='highlight'>are</span> you <span class='highlight'>watching</span>?", text: "What are you watching?" },
+    { cat: "Be", ch: "他們去哪裡?", ans: "are ving", en: "Where <span class='highlight'>are</span> they <span class='highlight'>going</span>?", text: "Where are they going?" },
+    { cat: "Be", ch: "為什麼你們在笑?", ans: "are ving", en: "Why <span class='highlight'>are</span> you <span class='highlight'>laughing</span>?", text: "Why are you laughing?" },
+    { cat: "Be", ch: "我們甚麼時候離開?", ans: "are ving", en: "When <span class='highlight'>are</span> we <span class='highlight'>leaving</span>?", text: "When are we leaving?" },
+    { cat: "Be", ch: "你在開玩笑嗎?", ans: "are ving", en: "<span class='highlight'>Are</span> you <span class='highlight'>kidding</span>?", text: "Are you kidding?" },
+
+    // 4.4 IS PP (Passive - Singular)
+    { cat: "Be", ch: "這叫甚麼名字?", ans: "is pp", en: "What <span class='highlight'>is</span> this <span class='highlight'>called</span>?", text: "What is this called?" },
+    { cat: "Be", ch: "它是在哪裡製造的?", ans: "is pp", en: "Where <span class='highlight'>is</span> it <span class='highlight'>made</span>?", text: "Where is it made?" },
+    { cat: "Be", ch: "垃圾甚麼時候被收集?", ans: "is pp", en: "When <span class='highlight'>is</span> the trash <span class='highlight'>collected</span>?", text: "When is the trash collected?" },
+    { cat: "Be", ch: "為什麼它被禁止?", ans: "is pp", en: "Why <span class='highlight'>is</span> it <span class='highlight'>forbidden</span>?", text: "Why is it forbidden?" },
+    { cat: "Be", ch: "這座位被佔用了嗎?", ans: "is pp", en: "<span class='highlight'>Is</span> this seat <span class='highlight'>taken</span>?", text: "Is this seat taken?" },
+
+    // 4.5 AM PP (Passive - I)
+    { cat: "Be", ch: "我為什麼被選中?", ans: "am pp", en: "Why <span class='highlight'>am</span> I <span class='highlight'>chosen</span>?", text: "Why am I chosen?" },
+    { cat: "Be", ch: "我在哪裡被需要?", ans: "am pp", en: "Where <span class='highlight'>am</span> I <span class='highlight'>needed</span>?", text: "Where am I needed?" },
+    { cat: "Be", ch: "我何時被允許離開?", ans: "am pp", en: "When <span class='highlight'>am</span> I <span class='highlight'>allowed</span> to leave?", text: "When am I allowed to leave?" },
+    { cat: "Be", ch: "我該怎麼被稱呼?", ans: "am pp", en: "How <span class='highlight'>am</span> I <span class='highlight'>addressed</span>?", text: "How am I addressed?" },
+    { cat: "Be", ch: "我是被邀請的嗎?", ans: "am pp", en: "<span class='highlight'>Am</span> I <span class='highlight'>invited</span>?", text: "Am I invited?" },
+
+    // 4.6 ARE PP (Passive - Plural)
+    { cat: "Be", ch: "這些是用甚麼做的?", ans: "are pp", en: "What <span class='highlight'>are</span> these <span class='highlight'>made</span> of?", text: "What are these made of?" },
+    { cat: "Be", ch: "這些蘋果在哪裡種植的?", ans: "are pp", en: "Where <span class='highlight'>are</span> these apples <span class='highlight'>grown</span>?", text: "Where are these apples grown?" },
+    { cat: "Be", ch: "商店甚麼時候關門?", ans: "are pp", en: "When <span class='highlight'>are</span> the shops <span class='highlight'>closed</span>?", text: "When are the shops closed?" },
+    { cat: "Be", ch: "為什麼他們被懲罰?", ans: "are pp", en: "Why <span class='highlight'>are</span> they <span class='highlight'>punished</span>?", text: "Why are they punished?" },
+    { cat: "Be", ch: "你們準備好了嗎?", ans: "are pp", en: "<span class='highlight'>Are</span> you <span class='highlight'>prepared</span>?", text: "Are you prepared?" },
+
+    // 4.7 IS ADJ/N (State - Singular)
+    { cat: "Be", ch: "這是甚麼?", ans: "is adj/n", en: "What <span class='highlight'>is</span> this?", text: "What is this?" },
+    { cat: "Be", ch: "洗手間在哪裡?", ans: "is adj/n", en: "Where <span class='highlight'>is</span> the restroom?", text: "Where is the restroom?" },
+    { cat: "Be", ch: "他的生日是何時?", ans: "is adj/n", en: "When <span class='highlight'>is</span> his birthday?", text: "When is his birthday?" },
+    { cat: "Be", ch: "誰是你的老師?", ans: "is adj/n", en: "Who <span class='highlight'>is</span> your teacher?", text: "Who is your teacher?" },
+    { cat: "Be", ch: "他很高興嗎?", ans: "is adj/n", en: "<span class='highlight'>Is</span> he happy?", text: "Is he happy?" },
+
+    // 4.8 AM ADJ/N (State - I)
+    { cat: "Be", ch: "我在哪裡?", ans: "am adj/n", en: "Where <span class='highlight'>am</span> I?", text: "Where am I?" },
+    { cat: "Be", ch: "我是誰?", ans: "am adj/n", en: "Who <span class='highlight'>am</span> I?", text: "Who am I?" },
+    { cat: "Be", ch: "為什麼我這麼累?", ans: "am adj/n", en: "Why <span class='highlight'>am</span> I so tired?", text: "Why am I so tired?" },
+    { cat: "Be", ch: "我多大了?", ans: "am adj/n", en: "How old <span class='highlight'>am</span> I?", text: "How old am I?" },
+    { cat: "Be", ch: "我遲到了嗎?", ans: "am adj/n", en: "<span class='highlight'>Am</span> I late?", text: "Am I late?" },
+
+    // 4.9 ARE ADJ/N (State - Plural)
+    { cat: "Be", ch: "那些是甚麼?", ans: "are adj/n", en: "What <span class='highlight'>are</span> those?", text: "What are those?" },
+    { cat: "Be", ch: "我的鑰匙在哪裡?", ans: "are adj/n", en: "Where <span class='highlight'>are</span> my keys?", text: "Where are my keys?" },
+    { cat: "Be", ch: "你們甚麼時候有空?", ans: "are adj/n", en: "When <span class='highlight'>are</span> you free?", text: "When are you free?" },
+    { cat: "Be", ch: "誰是你的父母?", ans: "are adj/n", en: "Who <span class='highlight'>are</span> your parents?", text: "Who are your parents?" },
+    { cat: "Be", ch: "你餓了嗎?", ans: "are adj/n", en: "<span class='highlight'>Are</span> you hungry?", text: "Are you hungry?" }
+    ];
+
+    // 音效
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const sfx = {
+        playTone: (f, t, d, v=0.1) => {
+            if(audioContext.state==='suspended') audioContext.resume();
+            const o=audioContext.createOscillator(); const g=audioContext.createGain();
+            o.connect(g); g.connect(audioContext.destination);
+            o.type=t; o.frequency.value=f;
+            g.gain.setValueAtTime(v, audioContext.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime+d);
+            o.start(); o.stop(audioContext.currentTime+d);
+        },
+        // 一般點擊
+        click: () => sfx.playTone(600, 'triangle', 0.05, 0.2),
+        // ✅ 新增：開關掣聲 (短促清脆)
+        toggle: () => sfx.playTone(1200, 'sine', 0.03, 0.1),
+        // ✅ 新增：超級振奮開始聲 (登-登-登-登！)
+        startHyper: () => {
+            // C5 -> E5 -> G5 -> C6 (Square波形更有8-bit遊戲感)
+            sfx.playTone(523.25, 'square', 0.1, 0.1); 
+            setTimeout(() => sfx.playTone(659.25, 'square', 0.1, 0.1), 80); 
+            setTimeout(() => sfx.playTone(783.99, 'square', 0.1, 0.1), 160); 
+            setTimeout(() => sfx.playTone(1046.50, 'square', 0.3, 0.1), 240); 
+        },
+        correct: () => { sfx.playTone(880, 'sine', 0.1); setTimeout(()=>sfx.playTone(1760, 'sine', 0.2), 100); },
+        wrong: () => { sfx.playTone(150, 'sawtooth', 0.3, 0.3); }
+    };
+
+    // 變數
+    let currentQ = 0;
+    let score = 0;
+    let questions = [];
+    let wrongAnswers = [];
+    let isAnswering = false;
+    let timerInterval;
+    let timeLeft = 15;
+    let totalQuestions = 10;
+
+    function updateSlider(val) {
+        totalQuestions = parseInt(val);
+        document.getElementById('q-count-display').innerText = val;
+    }
+
+// ✅ 修改後的 startGame (支援重做錯題)
+    function startGame(retryMode = false) {
+        // 🔊 播放 Hyper 音效 (重做時都會播)
+        if(sfx && sfx.startHyper) sfx.startHyper();
+
+        let newQuestions = [];
+
+        if (retryMode) {
+            // --- 🔁 重做模式 ---
+            // 直接使用上一局的錯題作為新題目
+            newQuestions = [...wrongAnswers];
+            
+            // 隨機洗牌 (可選)
+            newQuestions.sort(() => 0.5 - Math.random());
+            
+        } else {
+            // --- 🆕 新遊戲模式 (原本的邏輯) ---
+            
+            // 1. 獲取勾選的類別
+            const selectedCats = Array.from(document.querySelectorAll('input[name="cat"]:checked')).map(el => el.value);
+            if (selectedCats.length === 0) {
+                alert("請至少選擇一個類別！");
+                return;
+            }
+
+            // 2. 獲取題目數量
+            const slider = document.getElementById('q-slider');
+            const qCount = slider ? parseInt(slider.value) : 10;
+
+            // 3. 篩選題目
+            let pool = questionBank.filter(q => selectedCats.includes(q.cat));
+            if (pool.length === 0) {
+                alert("題庫中沒有符合該類別的題目！");
+                return;
+            }
+
+            // 4. 隨機選題
+            let tempPool = [...pool];
+            for(let i=0; i<qCount; i++) {
+                 if(tempPool.length === 0) tempPool = [...pool];
+                 const r = Math.floor(Math.random() * tempPool.length);
+                 newQuestions.push(tempPool[r]);
+                 tempPool.splice(r, 1);
+            }
+        }
+        
+        // 5. 初始化遊戲狀態
+        questions = newQuestions;
+        totalQuestions = questions.length;
+        score = 0;
+        currentQ = 0;
+        wrongAnswers = []; // 清空錯題記錄，準備記錄這一局的新錯題
+        
+        // 6. 介面切換
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'none';
+        document.getElementById('game-area').style.display = 'flex';
+        
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        isAnswering = true;
+        const q = questions[currentQ];
+        
+        // UI 更新
+        document.getElementById('score-display').innerText = `Score: ${score}`;
+        document.getElementById('q-num-display').innerText = `Q: ${currentQ + 1}/${totalQuestions}`;
+        document.getElementById('ch-sentence').innerText = q.ch;
+        document.getElementById('feedback-area').innerHTML = '';
+        document.getElementById('next-btn').style.display = 'none';
+        
+        // 按鈕重置
+        document.querySelectorAll('.grammar-btn').forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('correct', 'wrong');
+            btn.style.opacity = '1';
+        });
+
+        startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timeLeft = 15; // 每題 15 秒
+        updateTimerUI();
+        
+        timerInterval = setInterval(() => {
+            timeLeft -= 0.1;
+            if (timeLeft <= 0) {
+                timeLeft = 0;
+                timeUp();
+            }
+            updateTimerUI();
+        }, 100);
+    }
+
+    function updateTimerUI() {
+        const bar = document.getElementById('timer-bar');
+        const text = document.getElementById('timer-text');
+        const pct = (timeLeft / 15) * 100;
+        
+        bar.style.width = pct + '%';
+        text.innerText = timeLeft.toFixed(1);
+
+        // 變色邏輯
+        if (pct > 50) {
+            bar.style.backgroundColor = 'var(--primary-color)';
+        } else if (pct > 20) {
+            bar.style.backgroundColor = 'var(--warning-color)';
+        } else {
+            bar.style.backgroundColor = 'var(--danger-color)';
+        }
+    }
+
+    function timeUp() {
+        clearInterval(timerInterval);
+        if (!isAnswering) return;
+        
+        // 當作答錯處理
+        isAnswering = false;
+        const q = questions[currentQ];
+        sfx.wrong();
+        wrongAnswers.push({...q, userAns: "Time's up"});
+        showFeedback(false, q.en, q.text, q.ans);
+        
+        // 鎖定按鈕
+        document.querySelectorAll('.grammar-btn').forEach(btn => btn.disabled = true);
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function checkAnswer(userChoice, btnElement) {
+        if (!isAnswering) return;
+        isAnswering = false;
+        clearInterval(timerInterval);
+
+        const q = questions[currentQ];
+        const isCorrect = (userChoice === q.ans);
+
+        // 鎖定所有按鈕
+        document.querySelectorAll('.grammar-btn').forEach(btn => {
+            btn.disabled = true;
+            if (btn !== btnElement) btn.style.opacity = '0.5';
+        });
+
+        if (isCorrect) {
+            score++;
+            sfx.correct();
+            btnElement.classList.add('correct');
+            showFeedback(true, q.en, q.text);
+        } else {
+            sfx.wrong();
+            btnElement.classList.add('wrong');
+            wrongAnswers.push({...q, userAns: userChoice});
+            
+            // 提示正確答案的按鈕 (視覺輔助)
+            document.querySelectorAll('.grammar-btn').forEach(btn => {
+                // 用 onclick 的字串內容來比對有點 tricky，這裡簡單略過，直接看 Feedback
+                // 為了精確，我們比對 innerText
+                const btnText = btn.innerText.trim();
+                // 這裡簡化處理，因為 innerText 可能和 ans 不完全一樣 (例如 is (adj/n) vs is adj/n)
+                // 建議依靠 Feedback 顯示正確答案
+            });
+
+            showFeedback(false, q.en, q.text, q.ans);
+        }
+
+        document.getElementById('score-display').innerText = `Score: ${score}`;
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+// --- 修改後的 ShowFeedback (加入跟讀功能) ---
+    function showFeedback(correct, htmlSentence, rawSentence, correctAnsText = "") {
+        const area = document.getElementById('feedback-area');
+        const colorClass = correct ? 'feedback-correct' : 'feedback-wrong';
+        const msg = correct ? 'Bingo! 正確!' : `Oops! 應選: ${correctAnsText}`;
+        
+        // 設定全域變數，供評分使用
+        currentTargetText = rawSentence;
+
+        // 處理單引號
+        const safeSentence = rawSentence.replace(/'/g, "\\'");
+
+        area.innerHTML = `
+            <div class="feedback-card ${colorClass}">
+                <div style="font-size:16px; font-weight:bold; color:#555; margin-bottom:5px;">${msg}</div>
+                
+                <div class="en-sentence-reveal" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <span>${htmlSentence}</span>
+                    <span onclick="speak('${safeSentence}')" style="cursor:pointer; font-size:24px; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'" title="聽發音">
+                        🔊
+                    </span>
+                </div>
+
+                <div id="sentence-mic-area" style="border-top:2px dashed #ddd; padding-top:10px; margin-top:10px;">
+                    <button id="mic-btn" class="mic-btn" onclick="toggleMic()" disabled>
+                        <span>🎤</span> <span id="mic-status">請稍候... (正在播放)</span>
+                    </button>
+                    <div id="mic-feedback" class="mic-result"></div>
+                </div>
+            </div>
+        `;
+        
+        // 播放語音，加入 callback，讀完後解鎖按鈕
+        speak(rawSentence, () => {
+            const btn = document.getElementById('mic-btn');
+            const status = document.getElementById('mic-status');
+            if(btn) {
+                btn.disabled = false;
+                if(status) status.innerText = "跟讀這句 (評分)";
+            }
+        });
+    }
+
+    // --- 修改後的 Speak (支援 Callback) ---
+    function speak(text, onEndCallback) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            u.rate = 0.9;
+            
+            // 讀完後執行
+            u.onend = function() {
+                if (onEndCallback) onEndCallback();
+            };
+            // 出錯也執行 (避免按鈕鎖死)
+            u.onerror = function() {
+                if (onEndCallback) onEndCallback();
+            };
+            
+            window.speechSynthesis.speak(u);
+        } else {
+            // 不支援語音時直接 callback
+            if (onEndCallback) onEndCallback();
+        }
+    }
+
+    function nextQuestion() {
+        currentQ++;
+        if (currentQ < questions.length) {
+            loadQuestion();
+        } else {
+            endGame();
+        }
+    }
+
+function endGame() {
+        document.getElementById('game-area').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'flex';
+        document.querySelector('.final-score').innerText = `Score: ${score} / ${questions.length}`;
+        
+        const errContainer = document.getElementById('error-container');
+        errContainer.innerHTML = '';
+        
+        // 顯示錯題列表
+        if (wrongAnswers.length > 0) {
+            errContainer.innerHTML = `<div style="font-weight:bold; margin-bottom:10px;">錯題重溫 (${wrongAnswers.length}題):</div>`;
+            wrongAnswers.forEach(q => {
+                errContainer.innerHTML += `
+                    <div class="error-item">
+                        <div style="font-weight:bold;">${q.ch}</div>
+                        <div style="color:var(--primary-dark); font-size:14px;">${q.text}</div>
+                        <div style="font-size:12px; color:#888;">Ans: ${q.ans}</div>
+                    </div>
+                `;
+            });
+        } else {
+            errContainer.innerHTML = '<div style="text-align:center; color:var(--correct-color); font-weight:bold; font-size:18px;">完美全對！Excellent! 🎉</div>';
+        }
+
+        // 👇 生成底部按鈕 (根據是否有錯題顯示不同按鈕)
+        // 這裡參照了 index(11) 的結構和樣式
+        const retryDisplay = wrongAnswers.length > 0 ? 'inline-block' : 'none';
+        
+        // 找到原本放按鈕的 div (假設你在 HTML 裡已經有一個 div 包住按鈕)
+        // 為了方便，我們直接重新寫入整個按鈕區域
+        // 請確保你的 HTML 裡，end-screen 最底部的那個 div class 叫 "end-controls" 或者直接用 style 替換
+        
+        // 如果你原本的 HTML 是 <div style="display:flex; gap:10px; ...">，請給它一個 ID 例如 id="end-btn-area" 方便控制
+        // 既然要 "學 index(11)"，我建議直接用 JS 覆蓋那塊區域：
+        
+        const controlsHtml = `
+            <div style="display:flex; gap:10px; width:100%; justify-content:center; flex-wrap:wrap;">
+                <button class="btn-style big-start-btn" 
+                        style="flex:1; min-width:120px; background:#fff; border:2px solid #ccc; color:#555; white-space:nowrap;" 
+                        onclick="location.reload()">
+                    返回設定
+                </button>
+                
+                <button class="btn-style big-start-btn" 
+                        style="display:${retryDisplay}; flex:1; min-width:120px; background-color:#ffecc7; color:#d97706; border:2px dashed #d97706; white-space:nowrap;" 
+                        onclick="startGame(true)">
+                    重做錯題
+                </button>
+
+                <button class="btn-style big-start-btn" 
+                        style="flex:1; min-width:120px; white-space:nowrap;" 
+                        onclick="startGame(false)">
+                    再玩一次
+                </button>
+            </div>
+        `;
+        
+        // 這裡需要你確認一下 HTML 結構。
+        // 最簡單的方法是：在 end-screen 最後面放一個空的 <div id="end-controls-area"></div>
+        // 然後這裡用 innerHTML 填入去。
+        
+        // 假設你原本的 HTML 是寫死的按鈕，請去 HTML 把那幾個按鈕刪掉，換成一個空的容器：
+        // <div id="end-controls-area"></div>
+        
+        const btnArea = document.getElementById('end-controls-area');
+        if(btnArea) btnArea.innerHTML = controlsHtml;
+    }
+
+    // 自動綁定按鈕音效
+    document.querySelectorAll('button, input[type=range]').forEach(el => {
+        el.addEventListener('mousedown', () => { if(!el.disabled) sfx.click(); });
+    });
+// --- 筆記視窗控制 ---
+    function openNote() {
+        document.getElementById('note-modal').style.display = 'flex';
+    }
+
+    function closeNote() {
+        document.getElementById('note-modal').style.display = 'none';
+    }
+
+    // 點擊視窗外部也可以關閉
+    window.onclick = function(event) {
+        const modal = document.getElementById('note-modal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+// =========================================================
+    // 🎤 語音評分系統 (英文版)
+    // =========================================================
+    let recognition;
+    let isListening = false;
+    let currentTargetText = "";
+
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = function() {
+            isListening = true;
+            updateMicUI('聆聽中...請讀出句子', true);
+            document.getElementById('mic-feedback').innerHTML = '<span style="color:#888">Listening...</span>';
+        };
+
+        recognition.onend = function() {
+            isListening = false;
+            updateMicUI('跟讀這句 (評分)', false);
+        };
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            checkPronunciation(transcript);
+        };
+
+        recognition.onerror = function(event) {
+            isListening = false;
+            updateMicUI('跟讀這句 (評分)', false);
+            let msg = "Error";
+            if (event.error === 'no-speech') msg = "🔇 沒聽到聲音";
+            if (event.error === 'not-allowed') msg = "❌ 麥克風被封鎖";
+            document.getElementById('mic-feedback').innerHTML = `<span style="color:var(--danger-color);">${msg}</span>`;
+        };
+    }
+
+    function toggleMic() {
+        if (!recognition) { 
+            alert("瀏覽器不支援語音辨識 (建議使用 Chrome/Safari/Edge)"); 
+            return; 
+        }
+        if (isListening) {
+            recognition.stop();
+        } else {
+            try { recognition.start(); } catch (e) { recognition.stop(); }
+        }
+    }
+
+    function updateMicUI(text, active) {
+        const btn = document.getElementById('mic-btn');
+        const status = document.getElementById('mic-status');
+        if(status) status.innerText = text;
+        if (btn) {
+            if (active) btn.classList.add('listening');
+            else btn.classList.remove('listening');
+        }
+    }
+
+const inputs = document.querySelectorAll('.option-btn input');
+    inputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const parent = this.parentElement;
+            if(this.checked) parent.classList.add('selected');
+            else parent.classList.remove('selected');
+        });
+    });
+
+    function checkPronunciation(spokenText) {
+        const feedbackEl = document.getElementById('mic-feedback');
+        
+        // 移除標點並轉小寫，以便比對
+        const cleanRaw = (str) => str.toLowerCase().replace(/[.,?!"]/g, "").trim();
+        
+        const spokenWords = cleanRaw(spokenText).split(/\s+/);
+        const targetWords = cleanRaw(currentTargetText).split(/\s+/);
+        
+        let html = "";
+        let correctWords = 0;
+        
+        // 英文單字比對邏輯
+        let sIndex = 0;
+        for (let tIndex = 0; tIndex < targetWords.length; tIndex++) {
+            const target = targetWords[tIndex];
+            
+            if (sIndex < spokenWords.length) {
+                const spoken = spokenWords[sIndex];
+                if (spoken === target) {
+                    html += `<span class="diff-word diff-correct">${target}</span>`;
+                    correctWords++;
+                    sIndex++;
+                } else {
+                    // 簡單容錯：如果下一個字對上了，當作這個字讀錯
+                    if (sIndex + 1 < spokenWords.length && spokenWords[sIndex+1] === target) {
+                        html += `<span class="diff-word diff-wrong">${spoken}</span> `;
+                        html += `<span class="diff-word diff-correct">${target}</span>`;
+                        sIndex += 2;
+                        correctWords++;
+                    } else {
+                        html += `<span class="diff-word diff-missed">${target}</span>`;
+                        if (spoken) sIndex++; 
+                    }
+                }
+            } else {
+                html += `<span class="diff-word diff-missed">${target}</span>`;
+            }
+        }
+
+        const score = Math.round((correctWords / targetWords.length) * 100);
+        let msg = score >= 80 ? "Great Job! 🎉" : (score >= 50 ? "Good Try! 👍" : "Try Again 💪");
+        
+        if (score === 100 && sfx && sfx.correct) sfx.correct();
+
+        feedbackEl.innerHTML = `
+            <div style="font-size:14px; color:#555; margin-bottom:5px;">${msg} (${score}%)</div>
+            <div>${html}</div>
+        `;
+    }
+// --- 初始化：綁定按鈕點擊效果 & 音效 ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputs = document.querySelectorAll('.option-btn input');
+        const startBtn = document.getElementById('start-btn');
+        
+        inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                // 🔊 1. 播放 Toggle 音效
+                if(sfx && sfx.toggle) sfx.toggle(); 
+
+                // 2. 處理視覺效果 (加減 selected class)
+                const parent = this.parentElement;
+                if(this.checked) parent.classList.add('selected');
+                else parent.classList.remove('selected');
+                
+                // 3. 檢查是否至少選了一個 (控制開始按鈕)
+                const checked = document.querySelectorAll('input[name="cat"]:checked');
+                if(startBtn) { 
+                    startBtn.disabled = (checked.length === 0);
+                    startBtn.style.opacity = (checked.length === 0) ? '0.5' : '1';
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
