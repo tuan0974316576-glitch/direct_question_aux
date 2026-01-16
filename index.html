@@ -509,6 +509,35 @@
             transform: translateY(-2px);
         }
         .option-btn input { display: none; }
+        <div class="footer">
+        © 2026 Enguistics. All Rights Reserved.
+    </div>
+
+</div> ```
+
+### 第二步：加入 CSS (美化樣式)
+請將這段 CSS 貼在 `<style>` 標籤的**最底端**。
+我加咗 `margin-top: auto;`，咁樣就算畫面內容少，個 Footer 都會自動沉底，唔會吊喺半空。
+
+```css
+/* --- Footer 版權宣告樣式 --- */
+.footer {
+    margin-top: auto;       /* 自動推到最底 */
+    padding-top: 20px;      /* 同上面內容保持距離 */
+    text-align: center;     /* 文字置中 */
+    font-size: 12px;        /* 細字 */
+    color: #aaa;            /* 淺灰色，唔好搶鏡 */
+    font-weight: normal;
+    width: 100%;
+}
+
+/* 手機版微調 */
+@media (max-width: 600px) {
+    .footer {
+        font-size: 10px;    /* 手機再細少少 */
+        padding-bottom: 10px;
+    }
+}
 </style>
 </head>
 <body>
@@ -610,10 +639,12 @@
         </button>
     </div>
 
-    <div id="end-screen">
+<div id="end-screen">
         <div class="final-score">Score: 0</div>
         <div class="error-list" id="error-container"></div>
-<div id="end-controls-area" style="width:100%; margin-top:10px;"></div>
+        <div id="end-controls-area" style="width:100%; margin-top:10px;"></div>
+    </div> <div class="footer">
+        © 2026 Enguistics. All Rights Reserved.
     </div>
 </div>
 <div id="note-modal">
@@ -1474,5 +1505,6 @@ const inputs = document.querySelectorAll('.option-btn input');
 </body>
 
 </html>
+
 
 
