@@ -509,7 +509,26 @@
             transform: translateY(-2px);
         }
         .option-btn input { display: none; }
-.footer { © 2026 Enguistics Learning Centre. All Rights Reserved. }
+/* --- Footer 版權宣告樣式 --- */
+        .footer {
+            margin-top: auto;       
+            padding-top: 10px;      
+            padding-bottom: 0;      
+            text-align: center;     
+            font-size: 12px;        
+            color: #ccc;            
+            font-weight: normal;
+            width: 100%;
+            margin-bottom: -15px;   /* 負數 Margin 令佢貼底 */
+        }
+
+        /* 手機版微調 */
+        @media (max-width: 600px) {
+            .footer {
+                font-size: 10px;
+                margin-bottom: -5px; 
+            }
+        }
 
 ### 第二步：加入 CSS (美化樣式)
 請將這段 CSS 貼在 `<style>` 標籤的**最底端**。
@@ -1539,6 +1558,7 @@ const inputs = document.querySelectorAll('.option-btn input');
 </body>
 
 </html>
+
 
 
 
