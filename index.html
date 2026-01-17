@@ -509,11 +509,7 @@
             transform: translateY(-2px);
         }
         .option-btn input { display: none; }
-        <div class="footer">
-        © 2026 Enguistics Learning Centre. All Rights Reserved.
-    </div>
-
-</div> ```
+.footer { © 2026 Enguistics Learning Centre. All Rights Reserved. }
 
 ### 第二步：加入 CSS (美化樣式)
 請將這段 CSS 貼在 `<style>` 標籤的**最底端**。
@@ -1206,59 +1202,58 @@
     }
 
 // --- 修改後的 ShowFeedback (加入跟讀功能) ---
-    
-    // --- 修改後的 ShowFeedback (支援顯示解釋 & 跟讀) ---
-        function showFeedback(correct, htmlSentence, rawSentence, correctAnsText = "") {
-                const area = document.getElementById('feedback-area');
-                        const colorClass = correct ? 'feedback-correct' : 'feedback-wrong';
-                                const msg = correct ? 'Bingo! 正確!' : `Oops! 應選: ${correctAnsText}`;
-                                        
-                                                // 👇 1. 這裡新增：獲取當前題目的解釋
-                                                        const currentDesc = questions[currentQ] && questions[currentQ].desc ? questions[currentQ].desc : "";
-                                                                
-                                                                        // 設定全域變數，供評分使用
-                                                                                currentTargetText = rawSentence;
+// --- 修改後的 ShowFeedback (支援顯示解釋 & 跟讀) ---
+    function showFeedback(correct, htmlSentence, rawSentence, correctAnsText = "") {
+        const area = document.getElementById('feedback-area');
+        const colorClass = correct ? 'feedback-correct' : 'feedback-wrong';
+        const msg = correct ? 'Bingo! 正確!' : `Oops! 應選: ${correctAnsText}`;
+        
+        // 👇 1. 這裡新增：獲取當前題目的解釋
+        const currentDesc = questions[currentQ] && questions[currentQ].desc ? questions[currentQ].desc : "";
+        
+        // 設定全域變數，供評分使用
+        currentTargetText = rawSentence;
 
-                                                                                        // 處理單引號
-                                                                                                const safeSentence = rawSentence.replace(/'/g, "\\'");
+        // 處理單引號
+        const safeSentence = rawSentence.replace(/'/g, "\\'");
 
-                                                                                                        area.innerHTML = `
-                                                                                                                    <div class="feedback-card ${colorClass}">
-                                                                                                                                    <div style="font-size:16px; font-weight:bold; color:#555; margin-bottom:5px;">${msg}</div>
-                                                                                                                                                    
-                                                                                                                                                                    <div class="en-sentence-reveal" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom: 10px;">
-                                                                                                                                                                                        <span>${htmlSentence}</span>
-                                                                                                                                                                                                            <span onclick="speak('${safeSentence}')" style="cursor:pointer; font-size:24px; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'" title="聽發音">
-                                                                                                                                                                                                                                    🔊
-                                                                                                                                                                                                                                                        </span>
-                                                                                                                                                                                                                                                                        </div>
+        area.innerHTML = `
+            <div class="feedback-card ${colorClass}">
+                <div style="font-size:16px; font-weight:bold; color:#555; margin-bottom:5px;">${msg}</div>
+                
+                <div class="en-sentence-reveal" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom: 10px;">
+                    <span>${htmlSentence}</span>
+                    <span onclick="speak('${safeSentence}')" style="cursor:pointer; font-size:24px; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'" title="聽發音">
+                        🔊
+                    </span>
+                </div>
 
-                                                                                                                                                                                                                                                                                        ${currentDesc ? `
-                                                                                                                                                                                                                                                                                                            <div style="background: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 8px; font-size: 15px; color: #495057; text-align: left; border-left: 4px solid var(--primary-color); margin-bottom: 10px;">
-                                                                                                                                                                                                                                                                                                                                    <span style="font-weight:bold; color:var(--primary-dark);">💡 解說：</span>${currentDesc}
-                                                                                                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                                                                                                        ` : ''}
+                ${currentDesc ? `
+                    <div style="background: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 8px; font-size: 15px; color: #495057; text-align: left; border-left: 4px solid var(--primary-color); margin-bottom: 10px;">
+                        <span style="font-weight:bold; color:var(--primary-dark);">💡 解說：</span>${currentDesc}
+                    </div>
+                ` : ''}
 
-                                                                                                                                                                                                                                                                                                                                                                                        <div id="sentence-mic-area" style="border-top:2px dashed #ddd; padding-top:10px; margin-top:5px;">
-                                                                                                                                                                                                                                                                                                                                                                                                            <button id="mic-btn" class="mic-btn" onclick="toggleMic()" disabled>
-                                                                                                                                                                                                                                                                                                                                                                                                                                    <span>🎤</span> <span id="mic-status">請稍候... (正在播放)</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div id="mic-feedback" class="mic-result"></div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                `;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                // 播放語音，加入 callback，讀完後解鎖按鈕
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        speak(rawSentence, () => {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    const btn = document.getElementById('mic-btn');
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                const status = document.getElementById('mic-status');
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            if(btn) {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            btn.disabled = false;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            if(status) status.innerText = "跟讀這句 (評分)";
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                });
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+                <div id="sentence-mic-area" style="border-top:2px dashed #ddd; padding-top:10px; margin-top:10px;">
+                    <button id="mic-btn" class="mic-btn" onclick="toggleMic()" disabled>
+                        <span>🎤</span> <span id="mic-status">請稍候... (正在播放)</span>
+                    </button>
+                    <div id="mic-feedback" class="mic-result"></div>
+                </div>
+            </div>
+        `;
+        
+        // 播放語音，加入 callback，讀完後解鎖按鈕
+        speak(rawSentence, () => {
+            const btn = document.getElementById('mic-btn');
+            const status = document.getElementById('mic-status');
+            if(btn) {
+                btn.disabled = false;
+                if(status) status.innerText = "跟讀這句 (評分)";
+            }
+        });
+    }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
     // --- 修改後的 Speak (支援 Callback) ---
     function speak(text, onEndCallback) {
         if ('speechSynthesis' in window) {
@@ -1544,6 +1539,7 @@ const inputs = document.querySelectorAll('.option-btn input');
 </body>
 
 </html>
+
 
 
 
